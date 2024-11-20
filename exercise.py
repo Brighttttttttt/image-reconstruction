@@ -68,7 +68,7 @@ plt.colorbar()
 # ramp, cosine, hann, None)
 
 prct = 0.02 # noise percentage
-filter_name = 'ramp' # E.g., 'ramp', 'shepp-logan', 'cosine', 'hamming', 'hann', None
+filter_name = 'hamming' # E.g., 'ramp', 'shepp-logan', 'cosine', 'hamming', 'hann', None
 
 # Add noise and reconstruct
 sinog_noise = sinog + prct*sinog.max()*np.random.standard_normal(size=sinog.shape)
