@@ -4,14 +4,14 @@ Created on Fri Oct  4 18:40:52 2024
 
 @author: ducros
 """
-#from skimage import data
+#%% from skimage import data
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.transform import radon, iradon
 from pathlib import Path
 
 #%% load image and rescale to (0,1)
-image_file = Path('./data-lesson/ct_image_0.png')
+image_file = Path('./data/ct_image_0.png')
 save_folder = Path('lesson')
 
 imag = plt.imread(image_file)
@@ -54,7 +54,7 @@ plt.ylabel(r'$x_2$ (in pixels)')
 plt.colorbar()
 
 #%% load image and rescale to (0,1)
-image_file = Path('./data-lesson/ct_image_5.png')
+image_file = Path('./data/ct_image_2.png')
 imag = plt.imread(image_file)
 
 # rescale
@@ -110,7 +110,7 @@ for n in [1,2,4,16,32,64,128]:
     plt.close()
 
 #%% load image and rescale to (0,1)
-image_file = Path('./data-lesson/ct_image_5.png')
+image_file = Path('./data/ct_image_4_sinog.png')
 imag = plt.imread(image_file)
 
 # rescale
@@ -329,3 +329,5 @@ ax2.imshow(rec_pi, cmap=plt.cm.Greys_r)
 
 ax3.set_title(r'Recon with solver')
 ax3.imshow(rec_solv, cmap=plt.cm.Greys_r)
+
+# %%
