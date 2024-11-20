@@ -81,13 +81,13 @@ plt.ylabel(r'$x_2$ (in pixels)')
 plt.colorbar()
 
 #%% Exercise 4
-# Construct the discrete forward operator corresponding to the Radon transform
+# 1. Construct the discrete forward operator corresponding to the Radon transform
 # of a 32x32 image computed under 90 view angles over [0,\pi) using a linear
 # detector of 45 pixels.
 
 from skimage.transform import rescale
 
-img_size = 32  # we assume image is square
+img_size = 32  # image assumed to be square
 n_angle = 40
 n_detec = 45
 
