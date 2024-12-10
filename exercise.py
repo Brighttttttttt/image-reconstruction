@@ -92,7 +92,7 @@ n_angle = 40
 n_detec = 45
 
 # Init matrix A
-A = np.zeros((n_detec*n_angle, img_size*img_size))
+A = np.zeros((n_detec*n_angle, img_size**2))
 
 # Build the forward operator, one column at a time.     
 theta = np.linspace(0.0, 180.0, n_angle+1)[:-1]
@@ -117,4 +117,5 @@ ax.set_title("A")
 ax.set_ylabel(r"Projection rays $(r,\theta)$")
 ax.set_xlabel(r"Image pixels $x$")
 plt.show()
+
 # %%
