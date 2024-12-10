@@ -118,4 +118,126 @@ ax.set_ylabel(r"Projection rays $(r,\theta)$")
 ax.set_xlabel(r"Image pixels $x$")
 plt.show()
 
+# 2. Check that the forward matrix works
+from skimage.data import shepp_logan_phantom
+
+phantom = shepp_logan_phantom()
+phantom = rescale(phantom, scale=(img_size/phantom.shape[0]), mode='reflect')
+
+# Radon transform with skimage function
+sinog = radon(phantom, theta, circle=False) 
+sinog = rescale(sinog, scale=(n_detec/sinog.shape[0], 1), mode='reflect')
+
+# Radon transform as a matrix-vector product
+f = np.reshape(phantom, (img_size**2, 1))
+m = A @ f
+sinog2 = np.reshape(m, (n_detec, n_angle))
+
+# Plot both sinograms
+fig, (ax1, ax2) = plt.subplots(1, 2, ) 
+ax1.set_title(r"Sinogram from" + "\nRadon function")
+ax1.set_xlabel(r"Projection angle $\theta$ (in deg)")
+ax1.set_ylabel(r"Projection position $r$ (in pixels)")
+ax1.imshow(sinog, cmap=plt.cm.Greys_r, extent=(0, 180, 0, sinog.shape[0]), aspect='auto')
+
+ax2.set_title(r"Sinogram from" + "\n" + r"forward matrix $A$")
+ax2.set_xlabel(r"Projection angle $\theta$ (in deg)")
+ax2.imshow(sinog2, cmap=plt.cm.Greys_r, extent=(0, 180, 0, sinog2.shape[0]), aspect='auto')
+
+#%% Exercise 5
+# Implement the ART reconstruction algorithm and reconstruct the sinogram
+# of Exercise 4.
+
+def art(A, m, n_ite=15, f0=np.zeros((A.shape[1],1)), gamma=1):
+    """
+    Algebraic reconstruction technique.
+    
+    It solve the linear system :math:`m = Af` in an iterative manner. It is 
+    known as Kaczmarz method in numerical linear algebra.
+       
+
+    Args:
+        A (ndarray): System matrix :math:`A`.
+        
+        m (ndarray): Measurement vector :math:`m`.
+        
+        n_ite (int, optional): Number of iterations. Defaults to 15.
+        
+        f0 (ndarray, optional): Initialisation. Defaults to 0.
+        
+        gamma (float, optional): Relaxation parameter in )0,1). Defaults to 1.
+
+    Returns:
+        f (ndarray): Unknown vector :math:`f`.
+    """
+    # remove unrelevant (rho, theta) rays
+    a = np.sum(A, 1, keepdims=True)
+    ind = np.nonzero(a)[0]
+    m = m[ind]
+    A = A[ind,:]
+    
+    f = f0
+    # External iteration loop
+    for kk in range(n_ite):     
+        # Loop over the rows of A 
+        for ii in range(A.shape[0]): 
+            a_m = A[ii,:]
+            a_m = a_m[:,None]
+            f = f + gamma*(m[ii] - np.dot(a_m.T, f))/(np.dot(a_m.T, a_m))*a_m
+    return f
+
+# Reconstruct using 20 iterations of ART
+n_ite = 20
+f_rec = art(A, m, n_ite=n_ite)
+f_rec  = f_rec.reshape((img_size,img_size))
+
+# Display results
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4.5), layout='compressed')
+ax1.set_title(r"Ground Truth")
+im = ax1.imshow(phantom, cmap=plt.cm.Greys_r)
+fig.colorbar(im)
+
+ax2.set_title(f"ART ({n_ite} iterations)")
+im = ax2.imshow(f_rec, cmap=plt.cm.Greys_r)
+fig.colorbar(im)
+
+ax3.set_title(f"Diff ({n_ite} iterations)")
+im = ax3.imshow(phantom-f_rec, cmap=plt.cm.Greys_r)
+fig.colorbar(im)
+
+#%% Exercise 6
+# Reconstruct the sinogram of Exercise 4 by computing the pseudo inverse of the
+# forward matrix and by using a solver for linear systems. How do the 
+# reconstruction times compare?
+
+import time
+
+# Compute the pseudoinverse
+t0 = time.perf_counter()
+pinv = np.linalg.pinv(A)
+t0 = time.perf_counter() - t0
+
+# Reconstruct with pseudoinverse
+t1 = time.perf_counter()
+rec_pi = pinv @ m
+t1 = time.perf_counter() - t1
+print(f'Recon with pseudoinverse: {t0:.3f} + {t1:.4f} s')
+
+# Reconstruct with a linear solver
+t2 = time.perf_counter()
+rec_solv = np.linalg.solve(A, m)
+t2 = time.perf_counter() - t2
+print(f'Recon with solver: {t2:.3f} s')
+
+# Display results
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4.5))
+ax1.set_title(r"Ground Truth")
+ax1.imshow(phantom, cmap=plt.cm.Greys_r)
+
+ax2.set_title(r"Recon with pseudoinverse")
+ax2.imshow(rec_pi, cmap=plt.cm.Greys_r)
+
+ax3.set_title(r'Recon with solver')
+ax3.imshow(rec_solv, cmap=plt.cm.Greys_r)
+
 # %%
